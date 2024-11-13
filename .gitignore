@@ -1,2 +1,5 @@
+# Ignore the ai-agent directory, but not specific files inside it
 .env
+# Ignore both potential virtual environments
 ai-agent/
+ai-agent-3.12/

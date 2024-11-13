@@ -1,7 +1,7 @@
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
-from actions import get_response_time
+from actions import get_seo_page_report
 from prompts import system_prompt
 from json_helpers import extract_json
 
@@ -29,8 +29,12 @@ def generate_text_with_conversation(messages, model = "gpt-3.5-turbo"):
 #response = generate_text_with_conversation(test_messages)
 #print("AI Response:", response)
 
+#available_actions = {
+    #"get_response_time": get_response_time
+#}
+
 available_actions = {
-    "get_response_time": get_response_time
+    "get_seo_page_report": get_seo_page_report
 }
 
 user_prompt = "What is the response time for learnwithhasan.com?"
