@@ -1,77 +1,61 @@
-from openai import OpenAI
 import os
 from dotenv import load_dotenv
+from openai import OpenAI
 from actions import get_seo_page_report
-from prompts import system_prompt
+from prompts import react_system_prompt
 from json_helpers import extract_json
 
 # Load environment variables
 load_dotenv()
 
-# Create an instance of the OpenAI class
+# Initialize OpenAI
 openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-
-def generate_text_with_conversation(messages, model = "gpt-3.5-turbo"):
-    response = openai_client.chat.completions.create(
-        model=model,
-        messages=messages
+def generate_text_with_conversation(messages, model="gpt-4"):
+    """
+    Sends a conversation to OpenAI and retrieves the response.
+    """
+    try:
+        response = openai_client.chat.completions.create(
+            model=model,
+            messages=messages
         )
-    return response.choices[0].message.content
+        # Correctly access the response content
+        return response.choices[0].message.content
+    except AttributeError:
+        return "Error: OpenAI response structure has changed or is invalid."
+    except Exception as e:
+        return f"Error communicating with GPT: {e}"
 
-# Define a list of messages to simulate a conversation
-#test_messages = [
-   # {"role": "user", "content": "Hello, how are you?"},
-   # {"role": "system", "content": "You are a helpful AI assistant"}
-#]
 
-# Call the function with the test messages
-#response = generate_text_with_conversation(test_messages)
-#print("AI Response:", response)
+def main():
+    # Input URL for analysis
+    user_prompt = input("Enter the URL for SEO analysis: ")
+    
+    # Initialize the conversation messages
+    messages = [
+        {"role": "system", "content": react_system_prompt},
+        {"role": "user", "content": f"Analyze the following website: {user_prompt}"}
+    ]
 
-#available_actions = {
-    #"get_response_time": get_response_time
-#}
+    # Get the SEO report from RapidAPI
+    seo_report = get_seo_page_report(user_prompt)
+    if "error" in seo_report:
+        print(f"Error fetching SEO report: {seo_report['error']}")
+        return
 
-available_actions = {
-    "get_seo_page_report": get_seo_page_report
-}
+    # Add the SEO report to the conversation
+    messages.append({
+        "role": "assistant",
+        "content": f"Here is the SEO report for {user_prompt}: {seo_report}"
+    })
 
-user_prompt = "What is the response time for learnwithhasan.com?"
-
-messages = [
-    {"role": "system", "content": system_prompt},
-    {"role": "user", "content": user_prompt},
-]
-
-turn_count = 1
-max_turns = 5
-
-#testing one two
-
-#whyisthisnotworking
-while turn_count < max_turns:
-    print (f"Loop: {turn_count}")
-    print("----------------------")
-    turn_count += 1
-
-    response = generate_text_with_conversation(messages, model="gpt-4")
-
-    print(response)
-
-    json_function = extract_json(response)
-
-    if json_function:
-            function_name = json_function[0]['function_name']
-            function_parms = json_function[0]['function_parms']
-            if function_name not in available_actions:
-                raise Exception(f"Unknown action: {function_name}: {function_parms}")
-            print(f" -- running {function_name} {function_parms}")
-            action_function = available_actions[function_name]
-            #call the function
-            result = action_function(**function_parms)
-            function_result_message = f"Action_Response: {result}"
-            messages.append({"role": "user", "content": function_result_message})
-            print(function_result_message)
+    # Send to GPT for further analysis
+    gpt_response = generate_text_with_conversation(messages, model="gpt-4")
+    if "Error" in gpt_response:
+        print(gpt_response)  # Print error message if GPT fails
     else:
-         break
+        print(f"\nGPT's Analysis:\n{gpt_response}")
+
+if __name__ == "__main__":
+    main()
