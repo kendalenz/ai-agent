@@ -1,0 +1,17 @@
+/* styles.css */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f4f9;
+}
+
+#response {
+    margin-top: 20px;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.spinner-border {
+    display: none; /* Hidden by default, shown dynamically */
+}
