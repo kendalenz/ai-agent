@@ -1,15 +1,18 @@
-import os
-from dotenv import load_dotenv
-from openai import OpenAI
+from flask import Flask, request, jsonify, send_from_directory
 from actions import get_seo_page_report
 from prompts import react_system_prompt
-from json_helpers import extract_json
+from openai import OpenAI
+import os
+from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
 
 # Initialize OpenAI
 openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+# Initialize Flask app
+app = Flask(__name__)
 
 def generate_text_with_conversation(messages, model="gpt-4"):
     """
@@ -20,42 +23,41 @@ def generate_text_with_conversation(messages, model="gpt-4"):
             model=model,
             messages=messages
         )
-        # Correctly access the response content
         return response.choices[0].message.content
-    except AttributeError:
-        return "Error: OpenAI response structure has changed or is invalid."
     except Exception as e:
         return f"Error communicating with GPT: {e}"
 
+@app.route('/analyze', methods=['POST'])
+def analyze():
+    """
+    Analyze a URL and return GPT's response.
+    """
+    data = request.json
+    url = data.get('url')
 
-def main():
-    # Input URL for analysis
-    user_prompt = input("Enter the URL for SEO analysis: ")
-    
-    # Initialize the conversation messages
+    if not url:
+        return jsonify({"error": "URL is required"}), 400
+
+    # Get the SEO report
+    seo_report = get_seo_page_report(url)
+    if "error" in seo_report:
+        return jsonify({"error": seo_report["error"]}), 500
+
+    # Prepare messages for GPT
     messages = [
         {"role": "system", "content": react_system_prompt},
-        {"role": "user", "content": f"Analyze the following website: {user_prompt}"}
+        {"role": "user", "content": f"Analyze the following website: {url}"},
+        {"role": "assistant", "content": f"Here is the SEO report for {url}: {seo_report}"}
     ]
 
-    # Get the SEO report from RapidAPI
-    seo_report = get_seo_page_report(user_prompt)
-    if "error" in seo_report:
-        print(f"Error fetching SEO report: {seo_report['error']}")
-        return
-
-    # Add the SEO report to the conversation
-    messages.append({
-        "role": "assistant",
-        "content": f"Here is the SEO report for {user_prompt}: {seo_report}"
-    })
-
-    # Send to GPT for further analysis
+    # Get GPT's analysis
     gpt_response = generate_text_with_conversation(messages, model="gpt-4")
-    if "Error" in gpt_response:
-        print(gpt_response)  # Print error message if GPT fails
-    else:
-        print(f"\nGPT's Analysis:\n{gpt_response}")
+    return jsonify({"gpt_response": gpt_response})
+
+# Serve the index.html file
+@app.route('/')
+def index():
+    return send_from_directory('.', 'index.html')
 
 if __name__ == "__main__":
-    main()
+    app.run(debug=True)
