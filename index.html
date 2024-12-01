@@ -27,7 +27,7 @@
                 <button type="submit" class="btn btn-primary w-100">Analyze</button>
             </form>
     
-            <div id="response" class="alert alert-secondary" role="alert"></div>
+            <div id="response" class="alert alert-secondary d-none" role="alert"></div>
     
             <div class="text-center mt-3">
                 <div class="spinner-border text-primary" role="status">
@@ -49,38 +49,45 @@
             const spinner = document.querySelector('.spinner-border');
     
             form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const url = document.getElementById('url').value;
-    
-                responseDiv.textContent = '';
-                responseDiv.classList.remove('alert-success', 'alert-danger');
-                spinner.style.display = 'inline-block';
-    
-                try {
-                    const response = await fetch('/analyze', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ url }),
-                    });
-    
-                    const data = await response.json();
-                    spinner.style.display = 'none';
-    
-                    if (response.ok) {
-                        responseDiv.textContent = `GPT's Analysis: ${data.gpt_response}`;
-                        responseDiv.classList.add('alert-success');
-                    } else {
-                        responseDiv.textContent = `Error: ${data.error}`;
-                        responseDiv.classList.add('alert-danger');
-                    }
-                } catch (error) {
-                    spinner.style.display = 'none';
-                    responseDiv.textContent = `Error: ${error.message}`;
-                    responseDiv.classList.add('alert-danger');
-                }
-            });
+    e.preventDefault();
+    const url = document.getElementById('url').value;
+
+    // Ensure the response div is hidden initially
+    responseDiv.textContent = '';
+    responseDiv.classList.add('d-none'); // Keep it hidden until content is ready
+    responseDiv.classList.remove('alert-success', 'alert-danger');
+    spinner.style.display = 'inline-block'; // Show the loading spinner
+
+    try {
+        const response = await fetch('/analyze', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ url }),
+        });
+
+        const data = await response.json();
+        spinner.style.display = 'none'; // Hide the loading spinner
+
+        if (response.ok) {
+            responseDiv.textContent = `GPT's Analysis: ${data.gpt_response}`;
+            responseDiv.classList.add('alert-success'); // Add success styling
+        } else {
+            responseDiv.textContent = `Error: ${data.error}`;
+            responseDiv.classList.add('alert-danger'); // Add error styling
+        }
+
+        responseDiv.classList.remove('d-none'); // Show the response div AFTER populating content
+    } catch (error) {
+        spinner.style.display = 'none'; // Hide the loading spinner
+        responseDiv.textContent = `Error: ${error.message}`;
+        responseDiv.classList.add('alert-danger');
+        responseDiv.classList.remove('d-none'); // Show the response div AFTER populating content
+    }
+});
+
+
         </script>
     </body>
     

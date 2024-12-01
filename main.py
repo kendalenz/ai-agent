@@ -29,9 +29,6 @@ def generate_text_with_conversation(messages, model="gpt-4"):
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
-    """
-    Analyze a URL and return GPT's response.
-    """
     data = request.json
     url = data.get('url')
 
@@ -40,6 +37,7 @@ def analyze():
 
     # Get the SEO report
     seo_report = get_seo_page_report(url)
+
     if "error" in seo_report:
         return jsonify({"error": seo_report["error"]}), 500
 
@@ -52,7 +50,12 @@ def analyze():
 
     # Get GPT's analysis
     gpt_response = generate_text_with_conversation(messages, model="gpt-4")
-    return jsonify({"gpt_response": gpt_response})
+
+    # Return both GPT response and raw SEO report
+    return jsonify({
+        "gpt_response": gpt_response,
+        "seo_report": seo_report  # Include raw SEO report for debugging
+    })
 
 # Serve the index.html file
 @app.route('/')
