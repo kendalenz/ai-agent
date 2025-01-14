@@ -22,10 +22,23 @@
             <form id="seoForm" class="mb-3">
                 <div class="mb-3">
                     <label for="url" class="form-label">Enter a URL:</label>
-                    <input type="url" id="url" class="form-control" placeholder="https://example.com" required>
+                    <div class="input-group">
+                        <input type="url" id="url" class="form-control" placeholder="https://example.com" required>
+                        <button type="button" id="clearButton" class="btn btn-outline-secondary">
+                            &times;
+                        </button>
+                    </div>
                 </div>
                 <button type="submit" class="btn btn-primary w-100">Analyze</button>
             </form>
+
+            <!-- <form id="seoForm" class="mb-3">
+                <div class="mb-3">
+                    <label for="url" class="form-label">Enter a URL:</label>
+                    <input type="url" id="url" class="form-control" placeholder="https://example.com" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Analyze</button>
+            </form> -->
     
             <div id="response" class="alert alert-secondary d-none" role="alert"></div>
     
@@ -46,6 +59,13 @@
             const form = document.getElementById('seoForm');
             const responseDiv = document.getElementById('response');
             const spinner = document.querySelector('.spinner-border');
+
+            const clearButton = document.getElementById('clearButton');
+    clearButton.addEventListener('click', () => {
+        const urlField = document.getElementById('url');
+        urlField.value = ''; // Clear the input field
+        urlField.focus(); // Optionally bring focus back to the input
+    });
     
             form.addEventListener('submit', async (e) => {
             e.preventDefault();
