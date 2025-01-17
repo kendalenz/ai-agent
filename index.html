@@ -14,7 +14,6 @@
             rel="stylesheet"
         />
     </head>
-    
     <body>
         <div class="container mt-5">
             <h1 class="text-center mb-4">SEO Analyzer</h1>
@@ -31,118 +30,97 @@
                 </div>
                 <button type="submit" class="btn btn-primary w-100">Analyze</button>
             </form>
-
-            <!-- <form id="seoForm" class="mb-3">
-                <div class="mb-3">
-                    <label for="url" class="form-label">Enter a URL:</label>
-                    <input type="url" id="url" class="form-control" placeholder="https://example.com" required>
-                </div>
-                <button type="submit" class="btn btn-primary w-100">Analyze</button>
-            </form> -->
-    
             <div id="response" class="alert alert-secondary d-none" role="alert"></div>
-    
             <div class="text-center mt-3">
                 <div class="spinner-border text-primary" role="status">
                     <span class="visually-hidden">Loading...</span>
                 </div>
             </div>
         </div>
-    
         <!-- Bootstrap JS -->
         <script
             src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
         ></script>
-    
         <!-- Custom JavaScript -->
         <script>
             const form = document.getElementById('seoForm');
             const responseDiv = document.getElementById('response');
             const spinner = document.querySelector('.spinner-border');
-
             const clearButton = document.getElementById('clearButton');
-    clearButton.addEventListener('click', () => {
-        const urlField = document.getElementById('url');
-        urlField.value = ''; // Clear the input field
-        urlField.focus(); // Optionally bring focus back to the input
-    });
+            clearButton.addEventListener('click', () => {
+                const urlField = document.getElementById('url');
+                urlField.value = ''; // Clear the input field
+                urlField.focus(); // Optionally bring focus back to the input
+            });
     
             form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const url = document.getElementById('url').value;
+                e.preventDefault();
+                const url = document.getElementById('url').value;
 
-            responseDiv.innerHTML = ''; // Clear previous content
-            responseDiv.classList.add('d-none'); // Hide until ready
-            responseDiv.classList.remove('alert-success', 'alert-danger');
-            spinner.style.display = 'inline-block'; // Show loading spinner
+                responseDiv.innerHTML = ''; // Clear previous content
+                responseDiv.classList.add('d-none'); // Hide until ready
+                responseDiv.classList.remove('alert-success', 'alert-danger');
+                spinner.style.display = 'inline-block'; // Show loading spinner
 
-            try {
-                const response = await fetch('/analyze', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                body: JSON.stringify({ url }),
+                try {
+                    const response = await fetch('/analyze', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    body: JSON.stringify({ url }),
+                });
+
+                    const data = await response.json();
+                    spinner.style.display = 'none'; // Hide spinner
+
+                    if (response.ok) {
+                        const formattedResponse = formatGPTResponse(data.gpt_response);
+                        responseDiv.innerHTML = `<strong>GPT's Analysis:</strong>${formattedResponse}`;
+                        responseDiv.classList.add('alert-success');
+                    } else {
+                        responseDiv.textContent = `Error: ${data.error}`;
+                        responseDiv.classList.add('alert-danger');
+                    }
+
+                    responseDiv.classList.remove('d-none'); // Show the response
+                } catch (error) {
+                    spinner.style.display = 'none'; // Hide spinner
+                    responseDiv.textContent = `Error: ${error.message}`;
+                    responseDiv.classList.add('alert-danger');
+                    responseDiv.classList.remove('d-none'); // Show error
+                }
             });
 
-            const data = await response.json();
-            spinner.style.display = 'none'; // Hide spinner
+            function formatGPTResponse(response) {
+                // Escape HTML characters to prevent injection issues
+                response = response.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                // Replace Markdown-style bold (**text**) with <strong>text</strong>
+                response = response.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                // Split sections intelligently to reset numbering
+                const sections = response.split(/(?=\n[1-9]+\.\s)/g);
+                let formattedResponse = '';
+                sections.forEach((section) => {
+                    // Check if section contains a numbered list
+                    if (/\d+\.\s/.test(section)) {
+                        // Reset listIndex for each new list
+                        let listIndex = 1;
+                        // Format the section with numbered lists
+                        const formattedSection = section.replace(/(\d+)\.\s+(.*?)(?=\n\d+\.|\n|$)/gs, (match, number, text) => {
+                        const cleanedText = text.trim();
+                        return `<li>${cleanedText}</li>`;
+                    });
+                    formattedResponse += `<ol start="${listIndex}">${formattedSection}</ol>`;
+                        } else {
+                            // Handle non-list content
+                            formattedResponse += `<p>${section.trim()}</p>`;
+                        }
+                    });
 
-            if (response.ok) {
-                const formattedResponse = formatGPTResponse(data.gpt_response);
-                responseDiv.innerHTML = `<strong>GPT's Analysis:</strong>${formattedResponse}`;
-                responseDiv.classList.add('alert-success');
-            } else {
-                responseDiv.textContent = `Error: ${data.error}`;
-                responseDiv.classList.add('alert-danger');
-            }
-
-            responseDiv.classList.remove('d-none'); // Show the response
-            } catch (error) {
-                spinner.style.display = 'none'; // Hide spinner
-                responseDiv.textContent = `Error: ${error.message}`;
-                responseDiv.classList.add('alert-danger');
-                responseDiv.classList.remove('d-none'); // Show error
-            }
-        });
-
-        function formatGPTResponse(response) {
-  // Escape HTML characters to prevent injection issues
-  response = response.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-  // Replace Markdown-style bold (**text**) with <strong>text</strong>
-  response = response.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-
-  // Split sections intelligently to reset numbering
-  const sections = response.split(/(?=\n[1-9]+\.\s)/g);
-
-  let formattedResponse = '';
-  sections.forEach((section) => {
-    // Check if section contains a numbered list
-    if (/\d+\.\s/.test(section)) {
-      // Reset listIndex for each new list
-      let listIndex = 1;
-
-      // Format the section with numbered lists
-      const formattedSection = section.replace(/(\d+)\.\s+(.*?)(?=\n\d+\.|\n|$)/gs, (match, number, text) => {
-        const cleanedText = text.trim();
-        return `<li>${cleanedText}</li>`;
-      });
-
-      formattedResponse += `<ol start="${listIndex}">${formattedSection}</ol>`;
-    } else {
-      // Handle non-list content
-      formattedResponse += `<p>${section.trim()}</p>`;
-    }
-  });
-
-  // Replace standalone newlines with <br> for non-list content
-  formattedResponse = formattedResponse.replace(/\n(?!<li>|<\/li>)/g, '<br>');
-
-  return formattedResponse;
-}
-
-
+                    // Replace standalone newlines with <br> for non-list content
+                    formattedResponse = formattedResponse.replace(/\n(?!<li>|<\/li>)/g, '<br>');
+                    return formattedResponse;
+                }
     </script>
 </body>
     
