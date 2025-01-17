@@ -17,7 +17,6 @@
     <body>
         <div class="container mt-5">
             <h1 class="text-center mb-4">SEO Analyzer</h1>
-            
             <form id="seoForm" class="mb-3">
                 <div class="mb-3">
                     <label for="url" class="form-label">Enter a URL:</label>
@@ -30,6 +29,10 @@
                 </div>
                 <button type="submit" class="btn btn-primary w-100">Analyze</button>
             </form>
+            <div class="alert alert-warning" role="alert">
+                If you're encountering issues, try disabling browser extensions or using Incognito mode.
+            </div>
+            
             <div id="response" class="alert alert-secondary d-none" role="alert"></div>
             <div class="text-center mt-3">
                 <div class="spinner-border text-primary" role="status">
