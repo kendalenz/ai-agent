@@ -96,34 +96,39 @@
             });
 
             function formatGPTResponse(response) {
-                // Escape HTML characters to prevent injection issues
-                response = response.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                // Replace Markdown-style bold (**text**) with <strong>text</strong>
-                response = response.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                // Split sections intelligently to reset numbering
-                const sections = response.split(/(?=\n[1-9]+\.\s)/g);
-                let formattedResponse = '';
-                sections.forEach((section) => {
-                    // Check if section contains a numbered list
-                    if (/\d+\.\s/.test(section)) {
-                        // Reset listIndex for each new list
-                        let listIndex = 1;
-                        // Format the section with numbered lists
-                        const formattedSection = section.replace(/(\d+)\.\s+(.*?)(?=\n\d+\.|\n|$)/gs, (match, number, text) => {
-                        const cleanedText = text.trim();
-                        return `<li>${cleanedText}</li>`;
-                    });
-                    formattedResponse += `<ol start="${listIndex}">${formattedSection}</ol>`;
-                        } else {
-                            // Handle non-list content
-                            formattedResponse += `<p>${section.trim()}</p>`;
-                        }
-                    });
+    // Escape HTML characters to prevent injection issues
+    response = response.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    
+    // Replace Markdown-style bold (**text**) with <strong>text</strong>
+    response = response.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
+    // Initialize a global list index for numbering
+    let globalListIndex = 1;
+    
+    // Split sections intelligently to handle multiple sections
+    const sections = response.split(/(?=\n[1-9]+\.\s)/g);
+    let formattedResponse = '';
+    
+    sections.forEach((section) => {
+        // Check if section contains a numbered list
+        if (/\d+\.\s/.test(section)) {
+            // Format the section with numbered lists
+            const formattedSection = section.replace(/(\d+)\.\s+(.*?)(?=\n\d+\.|\n|$)/gs, (match, number, text) => {
+                const cleanedText = text.trim();
+                return `<li value="${globalListIndex++}">${cleanedText}</li>`;
+            });
+            formattedResponse += `<ol>${formattedSection}</ol>`;
+        } else {
+            // Handle non-list content
+            formattedResponse += `<p>${section.trim()}</p>`;
+        }
+    });
 
-                    // Replace standalone newlines with <br> for non-list content
-                    formattedResponse = formattedResponse.replace(/\n(?!<li>|<\/li>)/g, '<br>');
-                    return formattedResponse;
-                }
+    // Replace standalone newlines with <br> for non-list content
+    formattedResponse = formattedResponse.replace(/\n(?!<li>|<\/li>)/g, '<br>');
+    return formattedResponse;
+}
+
     </script>
 </body>
     
