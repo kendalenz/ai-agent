@@ -13,9 +13,6 @@ AI-Agent is a Python-based application that utilizes the **RapidAPI SEO API** an
 
 ---
 
-
----
-
 ## Technologies Used
 
 ### Programming
@@ -59,6 +56,8 @@ AI-Agent is a Python-based application that utilizes the **RapidAPI SEO API** an
 4. Configure your .env file:
    RAPIDAPI_KEY=your_rapidapi_key
    OPENAI_API_KEY=your_openai_api_key
+   
+---
 
 ## Usage
 1. Run the Application:
