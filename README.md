@@ -1,6 +1,6 @@
 # AI-Agent: SEO Analyzer & Assistant
 
-AI-Agent is a Python-based application that utilizes the **RapidAPI SEO API** and **OpenAI's ChatGPT API** to analyze URLs, provide SEO analysis, and generate actionable feedback. This project combines robust API integrations with an intuitive web interface to simplify the process of improving your website's SEO.
+AI-Agent is a python-based application that utilizes the **RapidAPI SEO API** and **OpenAI's ChatGPT API** to analyze URLs, provide SEO analysis and generate actionable feedback. This project combines robust API integrations with an intuitive web interface to simplify the process of improving your website's SEO.
 
 ---
 
@@ -8,8 +8,7 @@ AI-Agent is a Python-based application that utilizes the **RapidAPI SEO API** an
 
 - **URL Analysis**: Input any URL to fetch detailed SEO-related data using the RapidAPI SEO API.
 - **AI-Powered Feedback**: Leverages ChatGPT to generate insightful and actionable recommendations.
-- **Web Interface**: User-friendly interface built with HTML, CSS, and JavaScript.
-- **JSON Helpers**: Simplified handling of data structures for API integration and responses.
+- **Web Interface**: User-friendly interface built with HTML, CSS and JavaScript.
 
 ---
 
